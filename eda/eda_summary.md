@@ -1,4 +1,5 @@
 ## Gather Data + EDA for Final Project
+### Nick Perlich (nperlich@calpoly.edu)
 
 ### Description of Datasets and Why Chosen
 I am using a combination of two public datasets: 
@@ -34,8 +35,44 @@ The target signal is very clearly the happiness score. My goal is predicting hap
 
 Interaction Signals:
 
-Although feature importance analysis will need to validate the actual interaction signals, I am expecting the indicators from WDI that vary most with happiness scores are the ones that overlap in concept with the indicators from the WHR. For example, the WHR has an indicator that represents a score for GDP, so I expect to see WDI indicators containing "GDP" in the indicator name varying with happiness score.
+The interaction signal is pretty clearly the indicator value per country-indicator pair. Those values correlate with happiness score in some way that I plan to discover.
+
+#### Potential Features
+
+Although feature importance analysis will need to validate the actual features worth using, I am expecting the indicators from WDI that vary most with happiness scores to be the ones that overlap in concept with the indicators from the WHR. For example, the WHR has an indicator that represents a score for GDP, so I expect to see WDI indicators containing "GDP" in the indicator name varying with happiness score.
+
+### Informative Visuals
+#### Correlation
 
 ![correlation](./visuals/correlation.PNG)
 
-Combining happiness scores and indicators from WDI, I filtered to only data from 2015 as a start. I interpolated values that were missing for 2015 using a range of + or - 5 years. From that data, the above indicators were found to correlate most with happiness score. Some of them, such as life expectancy, I was expecting to see. My hypothesis was correct to some extent in expecting to see factors used in calculating happiness scores to show up as highly correlated with happiness. It is interesting to see an indicator about refugees being so highly correlated, but this makes sense from domain knowledge. It makes sense that countries with refugees would be happier because they would not be mandated to take in refugees if their population was not already taken care of to a high extent.
+Combining happiness scores and indicators from WDI, I filtered to only data from 2015 as a start. I interpolated values that were missing for 2015 using a range of + or - 5 years. From that data, the above indicators were found to correlate most with happiness score. Some of them, such as life expectancy, I was expecting to see. My hypothesis was correct to some extent in expecting to see factors used in calculating happiness scores to show up as highly correlated with happiness. It is interesting to see an indicator about refugees being so highly correlated, but this makes sense from domain knowledge. It makes sense that countries with refugees would be happier because they would not be mandated to take in refugees if their population was not already taken care of to a high extent. These indicators that correlate highly with happiness score are a good start for the potential features used to train my model.
+
+#### Grouping
+
+![grouping](./visuals/grouping.PNG)
+
+Above is a heatmap showing similarity of indicator names. The grouping pattern makes sense given how the World Development Indicators are named and organized. Indicators that describe related ideas, such as different measures of GDP or various types of emissions, naturally cluster together because they share much of the same language. This shows that a significant minority of indicators are essentially measuring the same underlying concept, just through slightly different terms or methodologies. It reinforces the idea that while the dataset contains hundreds of indicators, some represent overlapping aspects of development rather than entirely distinct factors. Despite this, there is still a clearly significant amount of unique factors that individually measure development.
+
+#### Distribution
+
+![distribution](./visuals/class_distribution.PNG)
+
+This histogram is the distribution of happiness scores. The distribution looks like it is approaching normal. There could be class imbalances depending on how the data is split up, but I will be making a recommender which likely wouldn't have the issues of a classifier. I believe that for a recommender it should be beneficial to have a roughly normal distribution of data.
+
+### Potential Challenges and Open Questions
+#### Potential Challenges
+
+The biggest challenge I expect to encounter is smartly sorting through more than 1000 potential features. It will be difficult to analyze which features are worth using and to perform the analysis correctly. I took first steps towards the full feature list analysis by only looking at one year's worth of data, and doing just that took significant effort. 
+
+Another challenge will be creating my finalized dataset that combines 6 different parquet files. It might be difficult correctly merging them and transforming the data into how I want it to be represented for the actual training of my model.
+
+One more challenge will be potentially dealing with missingness. It is possible that I will have enough features to choose from that don't have missing data. However, I do not want to miss out on features that have 80% coverage for example. I will need to find a safe way to fill in those empty data points without compromising my training and testing sets.
+
+#### Open Questions
+1) Which features matter the most for predicting country happiness scores?
+2) What is the best way to handle missing data for the years I plan to use?
+3) How much of an issue is missingness for the years 2015-2019?
+4) How, if at all, should similar indicators be aggregated?
+
+
