@@ -1,5 +1,5 @@
 from sklearn.ensemble import RandomForestRegressor
-from base_regressor import BaseRegressor
+from .base_regressor import BaseRegressor
 
 class RFRegressor(BaseRegressor):
     def __init__(self, n_estimators=300, random_state=42):

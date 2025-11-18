@@ -1,37 +1,47 @@
 import numpy as np
 import pandas as pd
-from base_regressor import BaseRegressor
+from .base_regressor import BaseRegressor
 
-class DumbIncomeRegressor(BaseRegressor):
+class DumbRegressor(BaseRegressor):
     """
-    Uses Adjusted Net National Income (current US$) as the
-    sole predictor of Happiness Score using simple linear regression.
+    A very simple regressor that predicts happiness score based only on
+    Adjusted net national income (current US$).
+    This is intentionally simple and meant only as a baseline heuristic.
     """
 
     def __init__(self):
-        self.coef_ = None
-        self.intercept_ = None
-        self.feature_name = "Adjusted net national income (current US$)"
+        super().__init__(name="DumbIncomeRegressor")
+        # will store scale info so prediction works later
+        self.income_mean = None
+        self.income_std = None
 
-    def fit(self, df):
-        # X = income, y = happiness
-        X = df[self.feature_name].values
-        y = df["Happiness Score"].values
+    def fit(self, X_train: pd.DataFrame, y_train: pd.Series):
+        """
+        This model does not actually learn parameters.
+        It only stores mean/std of the income column so predictions use similar scaling.
+        """
+        income_col = "Adjusted net national income (current US$)"
 
-        # Handle missing values (drop them for this dumb model)
-        mask = ~np.isnan(X) & ~np.isnan(y)
-        X = X[mask]
-        y = y[mask]
+        self.income_mean = X_train[income_col].mean()
+        self.income_std = X_train[income_col].std()
 
-        # Simple linear regression math
-        X_mean = X.mean()
-        y_mean = y.mean()
-        cov = ((X - X_mean) * (y - y_mean)).sum()
-        var = ((X - X_mean) ** 2).sum()
+        # No real training happens
+        return self
 
-        self.coef_ = cov / var
-        self.intercept_ = y_mean - self.coef_ * X_mean
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        """
+        Predicts happiness as a normalized version of national income.
+        (mean + std normalization brings values roughly into 0-10 range)
+        """
 
-    def predict(self, df):
-        X = df[self.feature_name].fillna(0).values
-        return self.intercept_ + self.coef_ * X
+        income_col = "Adjusted net national income (current US$)"
+        income = X[income_col]
+
+        # basic scaling to make numbers roughly in 0–10 range
+        z = (income - self.income_mean) / (self.income_std + 1e-9)
+
+        # shift into a plausible happiness range and clip outliers
+        preds = 5 + z
+        preds = np.clip(preds, 0, 10)
+
+        return preds.values
